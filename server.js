@@ -43,6 +43,16 @@ app.get("/api/health", async (_req, res) => {
   }
 });
 
+app.get("/api/stats", async (_req,res) => {
+ if(!pool)return res.status(503).json({error:"Database unavailable"});
+ try{
+  const subs=await pool.query("SELECT COUNT(*)::int AS total FROM quizflow_subscribers");
+  const dyn=await pool.query("SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE completed_at IS NOT NULL)::int AS completed FROM quizflow_dynamic_attempts");
+  const base=await pool.query("SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE completed_at IS NOT NULL)::int AS completed FROM quizflow_attempts");
+  const total=Number(dyn.rows[0].total)+Number(base.rows[0].total), completed=Number(dyn.rows[0].completed)+Number(base.rows[0].completed);
+  res.json({subscribers:subs.rows[0].total,attempts:total,completed,completion:total?Math.round(completed/total*100):0});
+ }catch(err){console.error("Stats error",err);res.status(503).json({error:"Quiz analytics tables are not ready yet"});}
+});
 app.get("/api/assessments", async (_req, res) => {
   if (!pool) return res.status(503).json({ error: "DATABASE_URL is not configured" });
   try {
