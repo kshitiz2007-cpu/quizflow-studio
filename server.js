@@ -24,6 +24,13 @@ async function initDb() {
     )
   `);
 }
+  await pool.query(`
+    INSERT INTO assessments (id,title,description,category,status,questions,duration)
+    VALUES
+      ('QF-001','Personal Growth Baseline','Assess habits, focus and direction.','Growth','Published','[]'::jsonb,8),
+      ('QF-002','Leadership Readiness','Explore decision making and ownership.','Leadership','Draft','[]'::jsonb,12)
+    ON CONFLICT (id) DO NOTHING
+  `);
 app.get("/api/health", async (_req, res) => {
   try { if (pool) await pool.query("SELECT 1"); res.json({ ok: true, database: Boolean(pool) }); }
   catch { res.status(503).json({ ok: false, database: false }); }
