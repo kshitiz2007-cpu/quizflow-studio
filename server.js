@@ -70,7 +70,7 @@ app.get("/api/subscribers/:id", async (req,res) => {
   const id=req.params.id;
   const subscriber=await pool.query("SELECT telegram_id,first_name,username,created_at,last_seen FROM quizflow_subscribers WHERE telegram_id=$1",[id]);
   if(!subscriber.rowCount)return res.status(404).json({error:"Subscriber not found"});
-  const attempts=await pool.query(`SELECT id,assessment_id,assessment_title,started_at,completed_at,answers,current_question,a.questions
+  const attempts=await pool.query(`SELECT d.id,d.assessment_id,d.assessment_title,d.started_at,d.completed_at,d.answers,d.current_question,a.questions
    FROM quizflow_dynamic_attempts d LEFT JOIN assessments a ON a.id=d.assessment_id
    WHERE d.telegram_id=$1 ORDER BY d.started_at DESC`,[id]);
   const results=[];
